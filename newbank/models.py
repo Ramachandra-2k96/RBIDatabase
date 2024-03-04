@@ -114,6 +114,10 @@ class Branch(models.Model):
         unique_together = ('bank', 'ifsc_code')
 
 
+from django.db import models
+from django.utils.crypto import get_random_string
+from django.utils.text import slugify
+
 class Account(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='accounts')
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE, to_field='ifsc_code', related_name='accounts')
@@ -122,18 +126,25 @@ class Account(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        # Generate a unique 16-digit account number
-        self.account_number = get_random_string(length=16, allowed_chars='0123456789')
+        # Check if the instance is being created for the first time
+        if not self.pk:
+            # Generate a unique 16-digit account number
+            self.account_number = get_random_string(length=16, allowed_chars='0123456789')
 
         super(Account, self).save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.user.username}'s Account - {self.account_number}"
 
+
+
+import uuid
 
 class Transaction(models.Model):
     TRANSACTION_TYPES = (
         ('Credit', 'Credit'),
         ('Debit', 'Debit'),
+        ('Transfer', 'Transfer'),
     )
 
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='transactions')
@@ -141,9 +152,13 @@ class Transaction(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0.01)])
     timestamp = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=15, default='Processing', null=True)
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_transactions', null=True, blank=True)
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_transactions', null=True, blank=True)
+    transaction_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     def __str__(self):
-        return f"{self.transaction_type} - {self.amount}"
+        return f"{self.transaction_type} - {self.amount} - {self.transaction_id}"
+
 
 from django.utils import timezone
 
@@ -215,29 +230,4 @@ class Loan(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return f"{self.account.user.username}'s Loan - {self.id}"
-
-@receiver(post_save, sender=Transaction)
-def schedule_transaction_status_check(sender, instance, **kwargs):
-    if instance.status == 'Processing':
-        eta = timezone.now() + timezone.timedelta(minutes=10)
-        check_transaction_status.apply_async(args=[instance.id], eta=eta)
-
-@receiver(post_save, sender=Loan)
-def update_account_balance(sender, instance, **kwargs):
-    if instance.status == 'Approved':
-        instance.account.balance += instance.loan_amount
-        instance.account.save()
-
-def check_transaction_status(transaction_id):
-    try:
-        transaction = Transaction.objects.get(id=transaction_id)
-        if transaction.status == 'Processing' and (timezone.now() - transaction.timestamp).seconds > 600:
-            transaction.status = 'Rejected'
-            transaction.save()
-            transaction.account.balance += transaction.amount
-            transaction.account.save()
-
-    except ObjectDoesNotExist:
-        pass
-    except Exception as e:
-        pass
+    

@@ -1,4 +1,5 @@
-from datetime import timezone
+from datetime import timedelta, timezone
+from decimal import Decimal
 from django.shortcuts import render
 from django.db.models import Count
 from django.http import HttpResponse
@@ -62,7 +63,7 @@ def custom_login(request):
             # Log the user in
             login(request, user)
             # Redirect to a success page or home page
-            return redirect('landing')
+            return redirect('dashboard')
         else:
             # Return an error message or handle invalid credentials
             return render(request, 'login.html', {'error': 'Invalid username or password'})
@@ -117,18 +118,30 @@ def branch_details(request, branch_ifsc):
         user_profiles  = [account.user for account in accounts]
         
         # Pie Chart for Customer Salaries
-        customer_salary_data = UserProfile.objects.filter(accounts__branch=branch).values('salary').annotate(count=Count('salary'))
-        salary_labels = [f"Salary: {entry['salary']}" for entry in customer_salary_data]
+        result = UserProfile.objects.filter(user__accounts__branch__ifsc_code=branch_ifsc) \
+            .values('salary') \
+            .annotate(count=Count('salary')) \
+            .order_by('salary')
+
+        # Extract salary values and counts into separate variables
+        salary_labels = [float(entry['salary']) for entry in result]
+        salary_counts = [entry['count'] for entry in result]
+        print(salary_labels)
+        print(salary_counts)
         
-        salary_counts = [entry['count'] for entry in customer_salary_data]
         # Pie Chart for Total Transactions by Customers
         transaction_data = Transaction.objects.filter(account__branch=branch).values('account__user__profile__salary').annotate(total_amount=Sum('amount'))
         transaction_labels = [f"Salary: {entry['account__user__profile__salary']}" for entry in transaction_data]
         transaction_amounts = [entry['total_amount'] for entry in transaction_data]
 
-        # Pie Chart for New User Registrations to the Branch
-        new_user_data = User.objects.filter(profile__accounts__branch=branch, profile__date_of_birth__isnull=False).values('profile__date_of_birth').annotate(count=Count('profile__date_of_birth'))
-        new_user_labels = [f"Age: {timezone.now().year - entry['profile__date_of_birth'].year}" for entry in new_user_data]
+        seven_days_ago = timezone.now() - timedelta(days=7)
+        new_user_data = Account.objects.filter(
+        created_at__gte=seven_days_ago,
+        created_at__lte=timezone.now(),  # Include today in the filter
+        branch__ifsc_code=branch_ifsc
+    ).values('created_at').annotate(count=Count('created_at'))
+        
+        new_user_labels = [entry['created_at'].strftime('%Y-%m-%d') for entry in new_user_data]
         new_user_counts = [entry['count'] for entry in new_user_data]
 
         context = {
@@ -233,3 +246,133 @@ def register_and_create_account(request, ifsc_code):
         return redirect('bank', branch_ifsc=ifsc_code)
 
     return render(request, 'registration.html')
+
+# views.py
+
+from django.shortcuts import render
+from django.views import View
+from .models import Transaction
+from django.db.models import Q
+
+class DashboardView(View):
+    template_name = 'dashboard.html'
+
+    def get(self, request, *args, **kwargs):
+        # Load user data (replace with your actual logic)
+        user = request.user
+        user_data=UserProfile.objects.get(user=user)
+        account=Account.objects.get(user=user)
+        balence=account.balance
+        # Load user transactions (replace with your actual logic)
+        transactions = Transaction.objects.filter(account__user=request.user)
+        # Separate credit and debit transactions
+        credit_transactions = [float(transaction.amount) for transaction in transactions.filter(Q(transaction_type='Credit') | Q(transaction_type='Transfer'), status='Completed')]
+        debit_transactions = [float(transaction.amount) for transaction in transactions.filter(transaction_type='Debit', status='Completed')]
+        context = {
+            'user_data': user_data,
+            'balence':balence,
+            'user_transaction':transactions,
+            'credit_transactions': credit_transactions,
+            'debit_transactions': debit_transactions,
+        }
+
+        return render(request, self.template_name, context)
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
+from django.contrib.auth.models import User
+from decimal import Decimal
+from .models import Account, Transaction
+
+@login_required
+def make_transfer(request):
+    if request.method == 'POST':
+        recipient_username = request.POST.get('recipient_username')
+        amount = Decimal(request.POST.get('amount', '0.0'))
+
+        try:
+            # Get sender's account
+            sender_account = Account.objects.get(user=request.user)
+
+            # Get recipient's user and account
+            try:
+                recipient_user = User.objects.get(username=recipient_username)
+                recipient_account = Account.objects.get(user=recipient_user)
+
+                # Check if the sender is trying to send money to himself
+                if sender_account == recipient_account:
+                    transaction = Transaction.objects.create(
+                        account=sender_account,
+                        transaction_type='Transfer',
+                        amount=amount,
+                        sender=request.user,
+                        recipient=recipient_user,
+                        status='Failed - Cannot transfer to yourself'
+                    )
+                    return redirect('dashboard')
+            except User.DoesNotExist:
+                # Handle recipient user not found
+                transaction = Transaction.objects.create(
+                    account=sender_account,
+                    transaction_type='Transfer',
+                    amount=amount,
+                    sender=request.user,
+                    recipient_username=recipient_username,
+                    status='Failed - Recipient not found'
+                )
+                return redirect('dashboard')
+
+            # Perform validation and check if the sender has sufficient balance
+            if sender_account.balance >= amount:
+                # Create a transfer transaction for sender (Debit)
+                sender_transaction = Transaction.objects.create(
+                    account=sender_account,
+                    transaction_type='Debit',
+                    amount=amount,
+                    sender=request.user,
+                    recipient=recipient_user,
+                    status='Processing'
+                )
+
+                # Create a transfer transaction for recipient (Credit)
+                recipient_transaction = Transaction.objects.create(
+                    account=recipient_account,
+                    transaction_type='Credit',
+                    amount=amount,
+                    sender=request.user,
+                    recipient=recipient_user,
+                    status='Processing'
+                )
+
+                # Update account balances
+                sender_account.balance -= amount
+                sender_account.save()
+
+                recipient_account.balance += amount
+                recipient_account.save()
+
+                sender_transaction.status = 'Completed'
+                sender_transaction.save()
+
+                recipient_transaction.status = 'Completed'
+                recipient_transaction.save()
+
+                return redirect('dashboard')
+            else:
+                # Handle insufficient balance
+                transaction = Transaction.objects.create(
+                    account=sender_account,
+                    transaction_type='Transfer',
+                    amount=amount,
+                    sender=request.user,
+                    recipient=recipient_user,
+                    status='Failed - Insufficient balance'
+                )
+                return redirect('dashboard')
+
+        except Account.DoesNotExist:
+            # Handle sender account not found
+            return HttpResponse("Your account is not found.")
+
+    return render(request, 'make_transfer.html')
