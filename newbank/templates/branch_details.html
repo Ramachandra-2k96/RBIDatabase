@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Branch Details - {{ branch.name }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+</head>
+
+<body class="bg-gray-100">
+
+    <!-- Navigation Bar -->
+    <nav class="bg-blue-500 p-4">
+        <div class="flex justify-end space-x-4">
+            <button class="text-white" onclick="location.href='{% url 'register_and_create_account' ifsc_code=branch.ifsc_code %}'">Add Account</button>
+            <button class="text-white" onclick="location.href='{% url 'logout' %}'">Logout</button>
+        </div>
+    </nav>
+
+    <!-- Branch Details -->
+    <div class="container mx-auto mt-8">
+        <h2 class="text-2xl font-bold mb-4">Branch Details - {{ branch.name }}</h2>
+
+        <!-- Display branch information -->
+        <div class="bg-white p-8 rounded shadow-md mb-8">
+            <p><strong>IFSC Code:</strong> {{ branch.ifsc_code }}</p>
+            <p><strong>Location:</strong> {{ branch.location }}</p>
+            <p><strong>Contact Number:</strong> {{ branch.contact_number }}</p>
+            <p><strong>Pin Code:</strong> {{ branch.pin_code }}</p>
+            <!-- Add more details as needed -->
+        </div>
+        <div class="mb-8">
+            <div class="flex items-center mb-4">
+                <input type="text" id="userSearch" class="px-2 py-1 border border-gray-300 rounded-md mr-4" placeholder="Search for a user">
+                <button onclick="searchUsers()" class="bg-blue-500 text-white px-4 py-2 rounded-md">Search</button>
+            </div>
+        </div>
+        
+        <div class="bg-white p-8 rounded shadow-md w-full max-w-2xl">
+            <h2 class="text-2xl font-bold mb-4">User List with Accounts</h2>
+            <ul id="userList" class="list-none p-0">
+                {% for user in users_with_accounts %}
+                    <li class="border-b border-gray-300 py-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="font-bold text-blue-500">Name : {{ user.first_name }} {{ user.last_name }}<br> Email :{{ user.email }}</span> 
+                            </div>
+                            <div class="ml-4">
+                                <span class="text-gray-500">Account Number: {{ user.accounts.first.account_number }}</span>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-sm text-gray-600">
+                            <span>{{ user.profile.address }}</span> - {{ user.profile.contact_number }}
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <br>
+        <!-- Pie chart for Customer Salaries -->
+        <div class="mb-8">
+            <h3 class="text-xl font-bold mb-4">Pie chart for Customer Salaries</h3>
+            <canvas id="salaryChart" width="400" height="400"></canvas>
+        </div>
+<!-- ... (previous HTML code) ... -->
+
+<!-- Display Users with Accounts -->
+
+
+<script>
+    function searchUsers() {
+        var input, filter, ul, li, span, i, txtValue;
+        input = document.getElementById('userSearch');
+        filter = input.value.toUpperCase();
+        ul = document.getElementById('userList');
+        li = ul.getElementsByTagName('li');
+
+        for (i = 0; i < li.length; i++) {
+            span = li[i].getElementsByTagName('span')[0];
+            txtValue = span.textContent || span.innerText;
+
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                li[i].style.display = '';
+            } else {
+                li[i].style.display = 'none';
+            }
+        }
+    }
+</script>
+
+        <!-- Pie chart for Total Transactions by Customers -->
+        <div class="mb-8">
+            <h3 class="text-xl font-bold mb-4">Pie chart for Total Transactions by Customers</h3>
+            <canvas id="transactionChart" width="400" height="400"></canvas>
+        </div>
+
+        <!-- Pie chart for New User Registrations -->
+        <div class="mb-8">
+            <h3 class="text-xl font-bold mb-4">Pie chart for New User Registrations</h3>
+            <canvas id="newUserChart" width="400" height="400"></canvas>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0"></script>
+    <script>
+        // Generic Styling and Options for Charts
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                },
+            },
+            title: {
+                display: true,
+                text: '',  // The title will be set dynamically
+            },
+        };
+
+        // Salary Chart
+        var salaryData = {
+            labels: {% verbatim %}{{ salary_labels|safe }}{% endverbatim %},
+            datasets: [{
+                data: {% verbatim %}{{ salary_counts|safe }}{% endverbatim %},
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(54, 162, 235, 0.7)',
+                    // Add more colors as needed
+                ],
+            }]
+        };
+
+        var salaryChart = new Chart(document.getElementById('salaryChart'), {
+            type: 'pie',
+            data: salaryData,
+            options: {
+                ...chartOptions,
+                title: {
+                    display: true,
+                    text: 'Pie chart for Customer Salaries',
+                },
+            },
+        });
+
+        // Transaction Chart
+        var transactionData = {
+            labels: {% verbatim %}{{ transaction_labels|safe }}{% endverbatim %},
+            datasets: [{
+                data: {% verbatim %}{{ transaction_amounts|safe }}{% endverbatim %},
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(54, 162, 235, 0.7)',
+                    // Add more colors as needed
+                ],
+            }]
+        };
+
+        var transactionChart = new Chart(document.getElementById('transactionChart'), {
+            type: 'pie',
+            data: transactionData,
+            options: {
+                ...chartOptions,
+                title: {
+                    display: true,
+                    text: 'Pie chart for Total Transactions by Customers',
+                },
+            },
+        });
+
+        // New User Chart
+        var newUserData = {
+            labels: {% verbatim %}{{ new_user_labels|safe }}{% endverbatim %},
+            datasets: [{
+                data: {% verbatim %}{{ new_user_counts|safe }}{% endverbatim %},
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(54, 162, 235, 0.7)',
+                    // Add more colors as needed
+                ],
+            }]
+        };
+
+        var newUserChart = new Chart(document.getElementById('newUserChart'), {
+            type: 'pie',
+            data: newUserData,
+            options: {
+                ...chartOptions,
+                title: {
+                    display: true,
+                    text: 'Pie chart for New User Registrations',
+                },
+            },
+        });
+    </script>
+
+</body>
+
+</html>

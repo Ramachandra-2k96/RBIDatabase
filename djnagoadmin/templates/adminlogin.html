@@ -1,0 +1,73 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8"> 
+    <title>Admin Login Form</title>
+    <link rel="stylesheet" href="{% static 'css/adminlogstyle.css' %}">
+</head> 
+<body> 
+    <section> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <span></span> <span></span> <span></span> <span></span> <span></span> <span></span> 
+        <div class="signin"> 
+            <div class="content"> 
+                <h2>Sign In</h2> 
+                {% if form.errors %}
+                <div style="color: red;">
+                  {% for field, error_list in form.errors.items %}
+                    {% for error in error_list %}
+                      <p>{{ error }}</p>
+                    {% endfor %}
+                  {% endfor %}
+                </div>
+              {% endif %}
+                <div class="form"> 
+                    <form method="post" action="{% url 'custom_admin_login' %}">
+                        {% csrf_token %}
+                        
+                        <div class="inputBox"> 
+                            {{ form.username }} 
+                            <i>Username</i> 
+                        </div> 
+                        <br>
+                        <div class="inputBox"> 
+                            {{ form.password }} 
+                            <i>Password</i> 
+                        </div> 
+                        <br>
+                        <br>
+                        <div class="inputBox"> 
+                            <input type="submit" value="Login"> 
+                        </div> 
+                    </form>
+                </div> 
+            </div> 
+        </div> 
+    </section> 
+</body>
+</html>

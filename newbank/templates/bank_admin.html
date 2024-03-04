@@ -1,0 +1,114 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+</head>
+<body class="bg-gray-100">
+
+    <!-- Navigation Bar -->
+    <nav class="bg-blue-500 p-4">
+        <ul class="flex justify-end space-x-4">
+            <li><a href="{% url 'logout' %}" class="text-white">Log Out</a></li>
+            <li><a href="{% url 'add_branch' %}" class="text-white">Another Branch</a></li>
+        </ul>
+    </nav>
+
+    <section class="container mx-auto p-8">
+        <h2 class="text-2xl font-bold mb-4">{{ bank.name }}  Bank Dashboard</h2>
+
+        <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for branch in all_branches %}
+                <li>
+                    <a href="{% url 'branch_details' branch_ifsc=branch.ifsc_code %}" class="block bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold mb-2 text-blue-500">Branch Name: {{ branch.name }}</h3>
+                            <p class="text-gray-600 mb-4">Location: {{ branch.location }}</p>
+                            <p class="text-gray-600 mb-4">Contact: {{ branch.contact_number }}</p>
+                        </div>
+        
+                        <div class="bg-blue-500 text-white py-2 px-4">
+                            <p class="text-sm">IFSC Code:</p>
+                            <p class="font-semibold text-lg">{{ branch.ifsc_code }}</p>
+                        </div>
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    
+
+        <div class="mt-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="flex items-center justify-center">
+                    <h1>Employee Distribution</h1>
+                    <canvas id="employeeChart" class="w-48 h-48 md:w-64 md:h-64"></canvas>
+                </div>
+                <div class="flex items-center justify-center">
+                    <h1>Customer Distribution</h1>
+                    <canvas id="customerChart" class="w-48 h-48 md:w-64 md:h-64"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0"></script>
+        <script>
+            var employeeData = {
+                labels: {{ employee_labels|safe }},
+                datasets: [{
+                    data: {{ employee_counts|safe }},
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                    ],
+                }]
+            };
+
+            var employeeChart = new Chart(document.getElementById('employeeChart'), {
+                type: 'pie',
+                data: employeeData,
+                options: {
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        },
+                    },
+                    title: {
+                        display: true,
+                        text: 'Employee Distribution by Job Role'
+                    }
+                }
+            });
+            var customerData = {
+                labels: {{ branch_labels|safe }},
+                datasets: [{
+                    data: {{ branch_customer_counts|safe }},
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                    ],
+                }]
+            };
+            var customerChart = new Chart(document.getElementById('customerChart'), {
+                type: 'pie',
+                data: customerData,
+                options: {
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        },
+                    },
+                    title: {
+                        display: true,
+                        text: 'Customer Distribution by Branch'
+                    }
+                }
+            });
+        </script>
+    </section>
+</body>
+</html>

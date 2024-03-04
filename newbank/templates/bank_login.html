@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Form | Rahul Mendon</title>
+  <link rel="stylesheet" href="{% static 'loginstyles.css' %}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+<body style="background: url({% static 'img/bg.jpg' %}) no-repeat;display: flex;
+justify-content: center;
+align-items: center;
+min-height: 100vh;
+background-size: cover;
+background-position: center;">
+  <div class="wrapper">
+    <form action="" method="POST">
+    {% csrf_token %}
+      <h1>Login</h1>
+      <div class="input-box">
+        <input type="text" placeholder="Admin Email" id ="username" name="username"required>
+        <i class='bx bxs-user'></i>
+      </div>
+      <div class="input-box">
+        <input type="password" placeholder="Password" id ="password" name = "password"required>
+        <i class='bx bxs-lock-alt' ></i>
+      </div>
+      <div class="remember-forgot">
+        <label><input type="checkbox">Remember Me</label>
+        <a href="#">Forgot Password</a>
+      </div>
+      <button type="submit" class="btn">Login</button>
+    </form>
+  </div>
+</body>
+</html>
