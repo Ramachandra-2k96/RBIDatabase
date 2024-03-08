@@ -75,6 +75,7 @@ class BankEmployee(models.Model):
         ('operations_specialist', 'Operations Specialist'),
         ('cleaner', 'Cleaner'),
     ]
+    USERNAME_FIELD = 'employee_number'
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='bank_employee')
     employee_name = models.CharField(max_length=100)
     employee_number = models.CharField(max_length=20, unique=True)

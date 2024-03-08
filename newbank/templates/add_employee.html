@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <title>Add Employee</title>
+</head>
+<body class="bg-gray-100">
+
+<div class="min-h-screen flex items-center justify-center bg-gray-100">
+    <div class="bg-white p-8 rounded-md shadow-md w-100">
+        <h2 class="text-3xl font-bold mb-6">Add Employee</h2>
+
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    {{ form.first_name.label_tag }}
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                        <p class="text-red-500 text-sm">{{ form.first_name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    {{ form.last_name.label_tag }}
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                        <p class="text-red-500 text-sm">{{ form.last_name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div>
+                {{ form.salary.label_tag }}
+                {{ form.salary }}
+                {% if form.salary.errors %}
+                    <p class="text-red-500 text-sm">{{ form.salary.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                {{ form.position.label_tag }}
+                {{ form.position }}
+                {% if form.position.errors %}
+                    <p class="text-red-500 text-sm">{{ form.position.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                {{ form.address.label_tag }}
+                {{ form.address }}
+                {% if form.address.errors %}
+                    <p class="text-red-500 text-sm">{{ form.address.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                {{ form.ITFSCcode.label_tag }}
+                {{ form.ITFSCcode }}
+                {% if form.ITFSCcode.errors %}
+                    <p class="text-red-500 text-sm">{{ form.ITFSCcode.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+                Add Employee
+            </button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

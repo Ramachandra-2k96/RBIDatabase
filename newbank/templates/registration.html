@@ -15,6 +15,12 @@
     <div class="bg-white p-8 rounded shadow-md sm:w-96 w-full">
 
         <h2 class="text-2xl font-bold mb-4 text-center">User Registration</h2>
+        {% if error %}
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+        <strong class="font-bold">Error!</strong>
+        <span class="block sm:inline">{{ error }}</span>
+    </div>
+    {% endif %}
 
         <form method="post" class="space-y-4">
 
@@ -60,28 +66,28 @@
                 <!-- Date of Birth -->
                 <div>
                     <label for="date_of_birth" class="block text-sm font-medium text-gray-600">Date of Birth:</label>
-                    <input type="date" id="date_of_birth" name="date_of_birth"
+                    <input type="date" id="date_of_birth" name="date_of_birth"required
                         class="mt-1 p-2 w-full border rounded-md focus:outline-none focus:border-blue-500">
                 </div>
 
                 <!-- Salary -->
                 <div>
                     <label for="salary" class="block text-sm font-medium text-gray-600">Salary:</label>
-                    <input type="text" id="salary" name="salary"
+                    <input type="text" id="salary" name="salary"required
                         class="mt-1 p-2 w-full border rounded-md focus:outline-none focus:border-blue-500">
                 </div>
 
                 <!-- Occupation -->
                 <div>
                     <label for="occupation" class="block text-sm font-medium text-gray-600">Occupation:</label>
-                    <input type="text" id="occupation" name="occupation"
+                    <input type="text" id="occupation" name="occupation"required
                         class="mt-1 p-2 w-full border rounded-md focus:outline-none focus:border-blue-500">
                 </div>
 
                 <!-- Father's Name -->
                 <div>
                     <label for="father_name" class="block text-sm font-medium text-gray-600">Father's Name:</label>
-                    <input type="text" id="father_name" name="father_name"
+                    <input type="text" id="father_name" name="father_name"required
                         class="mt-1 p-2 w-full border rounded-md focus:outline-none focus:border-blue-500">
                 </div>
 

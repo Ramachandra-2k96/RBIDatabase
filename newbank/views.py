@@ -126,25 +126,28 @@ def branch_details(request, branch_ifsc):
         # Extract salary values and counts into separate variables
         salary_labels = [float(entry['salary']) for entry in result]
         salary_counts = [entry['count'] for entry in result]
-        print(salary_labels)
-        print(salary_counts)
-        
+    
         # Pie Chart for Total Transactions by Customers
-        transaction_data = Transaction.objects.filter(account__branch=branch).values('account__user__profile__salary').annotate(total_amount=Sum('amount'))
+        transaction_data = Transaction.objects.filter(account__branch=branch,status='Success').values('account__user__profile__salary').annotate(total_amount=Sum('amount'))
+       
         transaction_labels = [f"Salary: {entry['account__user__profile__salary']}" for entry in transaction_data]
-        transaction_amounts = [entry['total_amount'] for entry in transaction_data]
-
+        transaction_amounts = [float(entry['total_amount']) for entry in transaction_data]
+        print(transaction_amounts)
+        
+        user_transaction=Transaction.objects.filter(account__branch=branch)
         seven_days_ago = timezone.now() - timedelta(days=7)
         new_user_data = Account.objects.filter(
-        created_at__gte=seven_days_ago,
-        created_at__lte=timezone.now(),  # Include today in the filter
-        branch__ifsc_code=branch_ifsc
-    ).values('created_at').annotate(count=Count('created_at'))
+            created_at__gte=seven_days_ago,
+            created_at__lte=timezone.now(),
+            branch__ifsc_code=branch_ifsc
+        ).values('created_at__date').annotate(count=Count('created_at__date'))
         
-        new_user_labels = [entry['created_at'].strftime('%Y-%m-%d') for entry in new_user_data]
+        new_user_labels = [entry['created_at__date'].strftime('%Y-%m-%d') for entry in new_user_data]
         new_user_counts = [entry['count'] for entry in new_user_data]
+        print(new_user_counts)
 
         context = {
+            "user_transaction":user_transaction,
             "users_with_accounts":user_profiles,
             'branch': branch,
             'salary_labels': salary_labels,
@@ -192,13 +195,11 @@ def add_branch(request):
     return render(request, 'new_brach.html', {'form': form})
 
 
-from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
+from django.shortcuts import render, redirect
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 from .models import UserProfile, Account, Branch
-from django.utils.crypto import get_random_string
-from django.utils import timezone
-
 from datetime import datetime
 
 def register_and_create_account(request, ifsc_code):
@@ -221,31 +222,58 @@ def register_and_create_account(request, ifsc_code):
             # Handle invalid date format
             return render(request, 'registration.html', {'error': 'Invalid date format'})
 
-        # Create a new user
-        password = date_of_birth_str  # Using date_of_birth as the initial password
-        user = User.objects.create_user(username=email, email=email, password=password, first_name=first_name, last_name=last_name)
+        try:
+            # Validate user age
+            today = datetime.now().date()
+            age = today.year - date_of_birth.year - ((today.month, today.day) < (date_of_birth.month, date_of_birth.day))
+            if age < 10:
+                raise ValidationError("User must be at least 10 years old.")
+            
+            # Validate salary
+            if salary is not None and float(salary) < 30000:
+                raise ValidationError("Salary must be at least 30000.")
+            
+            # Check if email already exists
+            if User.objects.filter(email=email).exists():
+                raise IntegrityError("Email address already exists.")
+            
+            # Check if contact number already exists
+            if UserProfile.objects.filter(contact_number=contact_number).exists():
+                raise IntegrityError("Contact number already exists.")
 
-        # Create user profile
-        user_profile = UserProfile.objects.create(
-            user=user,
-            contact_number=contact_number,
-            address=address,
-            date_of_birth=date_of_birth,
-            salary=salary,
-            occupation=occupation,
-            father_name=father_name
-        )
-        # Create a bank account
-        branch = Branch.objects.get(ifsc_code=ifsc_code)
-        account = Account.objects.create(user=user, branch=branch)
+            # Create a new user
+            password = date_of_birth_str  # Using date_of_birth as the initial password
+            user = User.objects.create_user(username=email, email=email, password=password, first_name=first_name, last_name=last_name)
 
-        # Store account number as username in the User table
-        user.username = account.account_number
-        user.save()
+            # Create user profile
+            user_profile = UserProfile.objects.create(
+                user=user,
+                contact_number=contact_number,
+                address=address,
+                date_of_birth=date_of_birth,
+                salary=salary,
+                occupation=occupation,
+                father_name=father_name
+            )
 
-        return redirect('bank', branch_ifsc=ifsc_code)
+            # Create a bank account
+            branch = Branch.objects.get(ifsc_code=ifsc_code)
+            account = Account.objects.create(user=user, branch=branch)
+
+            # Store account number as username in the User table
+            user.username = account.account_number
+            user.save()
+
+            return redirect('branch', branch_ifsc=ifsc_code)
+
+        except ValidationError as e:
+            return render(request, 'registration.html', {'error': str(e)})
+
+        except IntegrityError as e:
+            return render(request, 'registration.html', {'error': str(e)})
 
     return render(request, 'registration.html')
+
 
 # views.py
 
@@ -376,3 +404,26 @@ def make_transfer(request):
             return HttpResponse("Your account is not found.")
 
     return render(request, 'make_transfer.html')
+
+from django.shortcuts import render, redirect
+from .forms import BankEmployeeForm
+
+from django.shortcuts import render, redirect
+from .forms import BankEmployeeForm
+from .models import Branch
+
+def add_employee(request, ifsc_code):
+    branch = Branch.objects.get(ifsc_code=ifsc_code)
+
+    if request.method == 'POST':
+        form = BankEmployeeForm(request.POST)
+        if form.is_valid():
+            employee = form.save(commit=False)
+            employee.ITFSCcode = branch
+            employee.save()
+            return redirect('branch', branch_ifsc=ifsc_code)
+    else:
+        form = BankEmployeeForm()
+
+    return render(request, 'add_employee.html', {'form': form})
+

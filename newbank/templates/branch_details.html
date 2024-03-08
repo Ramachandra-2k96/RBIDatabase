@@ -14,6 +14,7 @@
     <nav class="bg-blue-500 p-4">
         <div class="flex justify-end space-x-4">
             <button class="text-white" onclick="location.href='{% url 'register_and_create_account' ifsc_code=branch.ifsc_code %}'">Add Account</button>
+            <button class="text-white" onclick="location.href='{% url 'add_employee' ifsc_code=branch.ifsc_code %}'">Add Employee</button>
             <button class="text-white" onclick="location.href='{% url 'logout' %}'">Logout</button>
         </div>
     </nav>
@@ -37,6 +38,7 @@
             </div>
         </div>
         
+
         <div class="bg-white p-8 rounded shadow-md w-full max-w-2xl">
             <h2 class="text-2xl font-bold mb-4">User List with Accounts</h2>
             <ul id="userList" class="list-none p-0">
@@ -57,7 +59,39 @@
                 {% endfor %}
             </ul>
         </div>
+<br>
 
+<!-- Transaction History -->
+<div class="bg-white p-8 shadow-md rounded-md">
+    <h2 class="text-2xl font-bold mb-6">Transaction History</h2>
+    <ul class="space-y-4">
+        {% for transaction in user_transaction %}
+            <li class="relative flex items-center justify-between px-4 py-3 rounded-lg border 
+                       {% if transaction.status == 'Completed' %}
+                           border-green-400 bg-green-100
+                       {% elif transaction.status == 'Processing' %}
+                       bg-yellow-100 border-yellow-400
+                       {% else %}
+                           border-red-400 bg-red-100
+                       {% endif %}">
+                <div class="flex items-center space-x-4">
+                    <div class="flex-shrink-0 w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                        <!-- Add an icon or initial here -->
+                        {{ transaction.transaction_type|first }}
+                    </div>
+                    <div>
+                        <p class="text-gray-800 font-semibold">{{ transaction.transaction_type }}</p>
+                        <p class="text-gray-500">{{ transaction.amount }} - {{ transaction.status }}</p>
+                        <p class="text-gray-500 text-sm">{{ transaction.timestamp|date:"F d, Y H:i" }}</p>
+                    </div>
+                </div>
+                <div class="text-gray-500 absolute top-2 right-2">
+                    <p class="text-lg font-bold text-blue-500">{{ transaction.transaction_id }}</p>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
         <!-- Pie chart for Customer Salaries -->
         <div class="mb-8">
             <h3 class="text-xl font-bold mb-4">Pie chart for Customer Salaries</h3>
@@ -87,7 +121,8 @@
                 }
             }
         </script>
-
+        <br>
+                
         <!-- Pie chart for Total Transactions by Customers -->
         <div class="mb-8">
             <h3 class="text-xl font-bold mb-4">Pie chart for Total Transactions by Customers</h3>
@@ -126,7 +161,7 @@
        // Salary Chart
     var salaryData = {labels: {{ salary_labels|safe }},
     datasets: [{
-        data: {{ new_user_counts|safe }},
+        data: {{ salary_counts|safe }},
         backgroundColor: [
             'rgba(255, 99, 132, 0.7)',
             'rgba(54, 162, 235, 0.7)',
