@@ -96,18 +96,22 @@ class Branch(models.Model):
     name = models.CharField(max_length=100)
     bank = models.ForeignKey(Bank, on_delete=models.CASCADE, related_name='branches_at_bank')
     location = models.CharField(max_length=255)
-    managers_ssn = models.ForeignKey(BankEmployee, on_delete=models.SET_NULL, null=True, blank=True)
+    managers_ssn = models.ForeignKey(BankEmployee,to_field='employee_number', on_delete=models.SET_NULL, null=True, blank=True)
     contact_number = models.CharField(max_length=15)
     pin_code = models.CharField(max_length=10)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        # Generate a unique IFSC code by adding 2 random letters to the bank code
-        random_letters = get_random_string(length=2, allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-        self.ifsc_code = f'{self.bank.code}{random_letters}'
+        # Check if the object is being created or updated
+        is_new_object = not bool(self.pk)
+
+        # If it's a new object, generate a unique IFSC code
+        if is_new_object:
+            # Generate a unique IFSC code by adding 2 random letters to the bank code
+            random_letters = get_random_string(length=2, allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+            self.ifsc_code = f'{self.bank.code}{random_letters}'
 
         super(Branch, self).save(*args, **kwargs)
-
     def __str__(self):
         return f"{self.name}, {self.bank.name}"
 

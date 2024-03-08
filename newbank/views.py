@@ -407,9 +407,6 @@ def make_transfer(request):
 
 from django.shortcuts import render, redirect
 from .forms import BankEmployeeForm
-
-from django.shortcuts import render, redirect
-from .forms import BankEmployeeForm
 from .models import Branch
 
 def add_employee(request, ifsc_code):
@@ -418,12 +415,17 @@ def add_employee(request, ifsc_code):
     if request.method == 'POST':
         form = BankEmployeeForm(request.POST)
         if form.is_valid():
+            print("Form data before saving:", form.cleaned_data)
             employee = form.save(commit=False)
             employee.ITFSCcode = branch
             employee.save()
+            print("Employee data after saving:", employee.__dict__)
             return redirect('branch', branch_ifsc=ifsc_code)
+        else:
+            print(form.errors)
     else:
         form = BankEmployeeForm()
 
     return render(request, 'add_employee.html', {'form': form})
+
 

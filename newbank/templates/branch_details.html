@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Branch Details - {{ branch.name }}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body class="bg-gray-100">
@@ -31,6 +32,7 @@
             <p><strong>Pin Code:</strong> {{ branch.pin_code }}</p>
             <!-- Add more details as needed -->
         </div>
+       
         <div class="mb-8">
             <div class="flex items-center mb-4">
                 <input type="text" id="userSearch" class="px-2 py-1 border border-gray-300 rounded-md mr-4" placeholder="Search for a user">
@@ -38,28 +40,57 @@
             </div>
         </div>
         
+<!-- User Accounts -->
+<div class="bg-white p-8 rounded shadow-md w-full ">
+    <h2 class="text-3xl font-bold mb-6 text-gray-800">User Accounts</h2>
+    <ul id="userList" class="list-none p-0">
+        {% for user in users_with_accounts %}
+            <li class="border-b border-gray-300 py-6 transition duration-300 transform hover:scale-105">
+                <a href="" class="block group">
+                    <div class="flex items-center space-x-4">
+                        <div class="group-hover:text-blue-500">
+                            <!-- Font Awesome user icon -->
+                            <i class="fas fa-user-circle text-4xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800 group-hover:text-blue-500">{{ user.first_name }} {{ user.last_name }}</h3>
+                            <p class="text-gray-500">{{ user.email }}</p>
+                            <p class="text-gray-500">Account Number: {{ user.accounts.first.account_number }}</p>
+                            <p class="text-sm text-gray-600">{{ user.profile.address }} - {{ user.profile.contact_number }}</p>
+                        </div>
+                    </div>
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
 
-        <div class="bg-white p-8 rounded shadow-md w-full max-w-2xl">
-            <h2 class="text-2xl font-bold mb-4">User List with Accounts</h2>
-            <ul id="userList" class="list-none p-0">
-                {% for user in users_with_accounts %}
-                    <li class="border-b border-gray-300 py-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <span class="font-bold text-blue-500">Name : {{ user.first_name }} {{ user.last_name }}<br> Email :{{ user.email }}</span> 
-                            </div>
-                            <div class="ml-4">
-                                <span class="text-gray-500">Account Number: {{ user.accounts.first.account_number }}</span>
-                            </div>
-                        </div>
-                        <div class="mt-2 text-sm text-gray-600">
-                            <span>{{ user.profile.address }}</span> - {{ user.profile.contact_number }}
-                        </div>
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
 <br>
+
+<!-- Display Users with Accounts -->
+<script>
+    function searchUsers() {
+        var input, filter, ul, li, user, i, txtValue;
+        input = document.getElementById('userSearch');
+        filter = input.value.toUpperCase();
+        ul = document.getElementById('userList');
+        li = ul.getElementsByTagName('li');
+
+        for (i = 0; i < li.length; i++) {
+            user = li[i].querySelector('.text-gray-800'); // Target the user's name element
+            if (user) {
+                txtValue = user.textContent || user.innerText;
+
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    li[i].style.display = '';
+                } else {
+                    li[i].style.display = 'none';
+                }
+            }
+        }
+    }
+</script>
+
 
 <!-- Transaction History -->
 <div class="bg-white p-8 shadow-md rounded-md">
@@ -68,11 +99,11 @@
         {% for transaction in user_transaction %}
             <li class="relative flex items-center justify-between px-4 py-3 rounded-lg border 
                        {% if transaction.status == 'Completed' %}
-                           border-green-400 bg-green-100
+                           border-green-400 bg-green-100 transition-transform transform hover:scale-105
                        {% elif transaction.status == 'Processing' %}
-                       bg-yellow-100 border-yellow-400
+                           border-yellow-400 bg-yellow-100 transition-transform transform hover:scale-105
                        {% else %}
-                           border-red-400 bg-red-100
+                           border-red-400 bg-red-100 transition-transform transform hover:scale-105
                        {% endif %}">
                 <div class="flex items-center space-x-4">
                     <div class="flex-shrink-0 w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
@@ -83,114 +114,87 @@
                         <p class="text-gray-800 font-semibold">{{ transaction.transaction_type }}</p>
                         <p class="text-gray-500">{{ transaction.amount }} - {{ transaction.status }}</p>
                         <p class="text-gray-500 text-sm">{{ transaction.timestamp|date:"F d, Y H:i" }}</p>
+                        <p class="text-lg font-bold text-blue-500">{{ transaction.transaction_id }}</p>
                     </div>
-                </div>
-                <div class="text-gray-500 absolute top-2 right-2">
-                    <p class="text-lg font-bold text-blue-500">{{ transaction.transaction_id }}</p>
                 </div>
             </li>
         {% endfor %}
     </ul>
 </div>
+
+        <br>
+        <!-- Pie chart for Total Transactions by Customers -->
+         <!-- Branch Details -->
+    <div class="bg-white p-8 rounded shadow-md w-full container mx-auto mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+        <!-- Pie chart for New User Registrations -->
+        <div class="mb-8">
+            <h3 class="text-xl font-bold mb-4">Pie chart for New User Registrations</h3>
+            <div class="chart-container" style="position: relative; width:100%; max-width: 600px; height:300px; margin: 0 auto;">
+                <canvas id="newUserChart"></canvas>
+            </div>
+        </div>
         <!-- Pie chart for Customer Salaries -->
         <div class="mb-8">
             <h3 class="text-xl font-bold mb-4">Pie chart for Customer Salaries</h3>
-            <div class="chart-container" style="position: relative; width:300px; height:300px;">
+            <div class="chart-container" style="position: relative; width:100%; max-width: 600px; height:300px; margin: 0 auto;">
                 <canvas id="salaryChart"></canvas>
             </div>
         </div>
-
-        <!-- Display Users with Accounts -->
-        <script>
-            function searchUsers() {
-                var input, filter, ul, li, span, i, txtValue;
-                input = document.getElementById('userSearch');
-                filter = input.value.toUpperCase();
-                ul = document.getElementById('userList');
-                li = ul.getElementsByTagName('li');
-
-                for (i = 0; i < li.length; i++) {
-                    span = li[i].getElementsByTagName('span')[0];
-                    txtValue = span.textContent || span.innerText;
-
-                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                        li[i].style.display = '';
-                    } else {
-                        li[i].style.display = 'none';
-                    }
-                }
-            }
-        </script>
-        <br>
-                
         <!-- Pie chart for Total Transactions by Customers -->
         <div class="mb-8">
             <h3 class="text-xl font-bold mb-4">Pie chart for Total Transactions by Customers</h3>
-            <div class="chart-container" style="position: relative; width:300px; height:300px;">
+            <div class="chart-container" style="position: relative; width:100%; max-width: 600px; height:300px; margin: 0 auto;">
                 <canvas id="transactionChart"></canvas>
             </div>
         </div>
 
-        <!-- Pie chart for New User Registrations -->
-        <div class="mb-8">
-            <h3 class="text-xl font-bold mb-4">Pie chart for New User Registrations</h3>
-            <div class="chart-container" style="position: relative; width:300px; height:300px;">
-                <canvas id="newUserChart"></canvas>
-            </div>
-        </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0"></script>
     <script>
-        // Generic Styling and Options for Charts
-        const chartOptions = {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top',
-                },
-            },
-            title: {
-                display: true,
-                text: '',  // The title will be set dynamically
-            },
+        // Function to generate random colors
+        function generateRandomColors(count) {
+            const colors = [];
+            for (let i = 0; i < count; i++) {
+                const randomColor = `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 0.7)`;
+                colors.push(randomColor);
+            }
+            return colors;
+        }
+
+        // Salary Chart
+        var salaryData = {
+            labels: {{ salary_labels|safe }},
+            datasets: [{
+                data: {{ salary_counts|safe }},
+                backgroundColor: generateRandomColors({{ salary_counts|length }}),
+            }]
         };
 
-       // Salary Chart
-    var salaryData = {labels: {{ salary_labels|safe }},
-    datasets: [{
-        data: {{ salary_counts|safe }},
-        backgroundColor: [
-            'rgba(255, 99, 132, 0.7)',
-            'rgba(54, 162, 235, 0.7)',
-        ],
-    }]
-    };
-
-    var salaryChart = new Chart(document.getElementById('salaryChart'), {
-        type: 'pie',
-        data: salaryData,
-        options: {
-            ...chartOptions,
-            title: {
-                display: true,
-                text: 'Pie chart for Customer Salaries',
+        var salaryChart = new Chart(document.getElementById('salaryChart'), {
+            type: 'pie',
+            data: salaryData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                    },
+                },
+                title: {
+                    display: true,
+                    text: 'Pie chart for Customer Salaries',
+                },
             },
-        },
-    });
+        });
 
         // Transaction Chart
         var transactionData = {
             labels:  {{ transaction_labels|safe }} ,
             datasets: [{
                 data:  {{ transaction_amounts|safe }} ,
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.7)',
-                    'rgba(54, 162, 235, 0.7)',
-                    // Add more colors as needed
-                ],
+                backgroundColor: generateRandomColors({{ transaction_amounts|length }}),
             }]
         };
 
@@ -198,7 +202,14 @@
             type: 'pie',
             data: transactionData,
             options: {
-                ...chartOptions,
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                    },
+                },
                 title: {
                     display: true,
                     text: 'Pie chart for Total Transactions by Customers',
@@ -211,10 +222,7 @@
             labels: {{ new_user_labels|safe }},
             datasets: [{
                 data: {{ new_user_counts|safe }},
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.7)',
-                    'rgba(54, 162, 235, 0.7)',
-                ],
+                backgroundColor: generateRandomColors({{ new_user_counts|length }}),
             }]
         };
 
@@ -222,6 +230,8 @@
             type: 'pie',
             data: newUserData,
             options: {
+                responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
                         display: true,
@@ -235,7 +245,6 @@
             },
         });
     </script>
-
 </body>
 
 </html>

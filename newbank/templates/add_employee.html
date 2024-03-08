@@ -1,76 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            background-image: url("https://images.unsplash.com/photo-1580927752452-89d86da3fa0a?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9");
+            background-size: cover; /* Adjust as needed */
+            background-position: center; /* Adjust as needed */
+            background-repeat: no-repeat;
+            align-items: center;
+            height: 100%;
+        }
+
+        .form-container {
+            background-color: rgba(255, 255, 255, 0.322);
+            backdrop-filter: blur(5px);
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 600px;
+            transition: transform 0.3s ease-in-out;
+            margin: auto;
+        }
+
+        .form-container h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #3498db;
+            text-align: center;
+        }
+
+        form {
+            display: grid;
+            gap: 1rem;
+        }
+
+        label {
+            font-size: 0.875rem;
+            color: #ffffff;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+            display: block;
+        }
+
+        input, select {
+            z-index: 1;
+            background-color: #fff;;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 0.25rem;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 0.25rem;
+            transition: border-color 0.3s ease-in-out;
+        }
+
+        input:focus, select:focus {
+            border-color: #3498db;
+        }
+
+        button {
+            background-color: #3498db;
+            color: #fff;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease-in-out;
+            width: 100%;
+            display: inline-block;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+        textarea {
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 0.25rem;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 0.25rem;
+            transition: border-color 0.3s ease-in-out;
+            height: 8rem; 
+            resize: none;
+        }
+    </style>
     <title>Add Employee</title>
 </head>
-<body class="bg-gray-100">
 
-<div class="min-h-screen flex items-center justify-center bg-gray-100">
-    <div class="bg-white p-8 rounded-md shadow-md w-100">
-        <h2 class="text-3xl font-bold mb-6">Add Employee</h2>
+<body>
 
+    <div class="form-container">
+        <h2>Add Employee</h2>
         <form method="post" class="space-y-4">
             {% csrf_token %}
+            {{ form.non_field_errors }}
+            {{ form.first_name.label_tag }}
+            {{ form.first_name }}
+            {{ form.first_name.errors }}
+            {{ form.last_name.label_tag }}
+            {{ form.last_name }}
+            {{ form.last_name.errors }}
+            {{ form.salary.label_tag }}
+            {{ form.salary }}
+            {{ form.salary.errors }}
+            {{ form.position.label_tag }}
+            {{ form.position }}
+            {{ form.position.errors }}
+            {{ form.address.label_tag }}
+            {{ form.address }}
+            {{ form.address.errors }}
+            {{ form.ITFSCcode.label_tag }}
+            {{ form.ITFSCcode }}
+            {{ form.ITFSCcode.errors }}
 
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    {{ form.first_name.label_tag }}
-                    {{ form.first_name }}
-                    {% if form.first_name.errors %}
-                        <p class="text-red-500 text-sm">{{ form.first_name.errors.0 }}</p>
-                    {% endif %}
-                </div>
-
-                <div>
-                    {{ form.last_name.label_tag }}
-                    {{ form.last_name }}
-                    {% if form.last_name.errors %}
-                        <p class="text-red-500 text-sm">{{ form.last_name.errors.0 }}</p>
-                    {% endif %}
-                </div>
-            </div>
-
-            <div>
-                {{ form.salary.label_tag }}
-                {{ form.salary }}
-                {% if form.salary.errors %}
-                    <p class="text-red-500 text-sm">{{ form.salary.errors.0 }}</p>
-                {% endif %}
-            </div>
-
-            <div>
-                {{ form.position.label_tag }}
-                {{ form.position }}
-                {% if form.position.errors %}
-                    <p class="text-red-500 text-sm">{{ form.position.errors.0 }}</p>
-                {% endif %}
-            </div>
-
-            <div>
-                {{ form.address.label_tag }}
-                {{ form.address }}
-                {% if form.address.errors %}
-                    <p class="text-red-500 text-sm">{{ form.address.errors.0 }}</p>
-                {% endif %}
-            </div>
-
-            <div>
-                {{ form.ITFSCcode.label_tag }}
-                {{ form.ITFSCcode }}
-                {% if form.ITFSCcode.errors %}
-                    <p class="text-red-500 text-sm">{{ form.ITFSCcode.errors.0 }}</p>
-                {% endif %}
-            </div>
-
-            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline-blue active:bg-blue-800">
                 Add Employee
             </button>
         </form>
     </div>
-</div>
 
 </body>
+
 </html>
