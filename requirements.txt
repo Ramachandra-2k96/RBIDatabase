@@ -3,3 +3,4 @@ Django==5.0.3
 neo4j==5.18.0
 pytz==2024.1
 sqlparse==0.4.4
+whitenoise==6.6.0
