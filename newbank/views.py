@@ -158,8 +158,6 @@ def branch_details(request, branch_ifsc):
         return render(request, 'branch_not_found.html')
 
 
-
-
 from django.shortcuts import render, redirect
 from .forms import BranchForm
 from .models import Bank, Branch
