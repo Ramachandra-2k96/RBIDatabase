@@ -41,12 +41,9 @@
                     <li class="list-item">
                         <a href="#" class="list-link">Contact</a>
                     </li>
-                    <li class="list-item screen-lg-hidden">
-                        <a href="./signin.html" class="list-link">Sign in</a>
-                    </li>
-                    <li class="list-item screen-lg-hidden">
-                        <a href="./signup.html" class="list-link">Sign up</a>
-                    </li>
+                    <a href="{% url 'login'%}" class="btn sign-up-btn fancy-border screen-sm-hidden">
+                        <span>Sign in</span>
+                    </a>
                 </ul>
             </div>
 
