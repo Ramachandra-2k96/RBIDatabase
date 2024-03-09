@@ -119,7 +119,8 @@ import os
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR/'djnagoadmin', 'static')
+    os.path.join(BASE_DIR/'djnagoadmin', 'static'),
+    os.path.join(BASE_DIR/'newbank', 'static')
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, 'assets')
 MEDIA_URL = '/media/'
