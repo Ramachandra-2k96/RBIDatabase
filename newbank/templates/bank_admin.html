@@ -40,29 +40,37 @@
         </ul>
     
 
-        <div class="mt-8">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="flex items-center justify-center">
-                    <h1>Employee Distribution</h1>
-                    <canvas id="employeeChart" class="w-48 h-48 md:w-64 md:h-64"></canvas>
-                </div>
-                <div class="flex items-center justify-center">
-                    <h1>Customer Distribution</h1>
-                    <canvas id="customerChart" class="w-48 h-48 md:w-64 md:h-64"></canvas>
+        <div class="bg-white p-8 rounded shadow-md w-full mx-auto mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+            <div class="mb-8">
+                <h3 class="text-xl font-bold mb-4">Employee Distribution</h3>
+                <div class="chart-container" style="position: relative; width:100%; max-width: 600px; max-height:600px; margin: 0 auto;">
+                    <canvas id="employeeChart" ></canvas>
                 </div>
             </div>
+            <div class="mb-8">
+                <h3 class="text-xl font-bold mb-4">Customer Distribution</h3>
+                <div class="chart-container" style="position: relative; width:100%; max-width: 600px; max-height:600px; margin: 0 auto;">
+                    <canvas id="customerChart" ></canvas>
+                </div>
+            </div>
+            
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0"></script>
         <script>
+            function generateRandomColors(count) {
+                const colors = [];
+                for (let i = 0; i < count; i++) {
+                    const randomColor = `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 0.7)`;
+                    colors.push(randomColor);
+                }
+                return colors;
+            }
             var employeeData = {
                 labels: {{ employee_labels|safe }},
                 datasets: [{
                     data: {{ employee_counts|safe }},
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.7)',
-                        'rgba(54, 162, 235, 0.7)',
-                    ],
+                    backgroundColor: generateRandomColors({{ employee_counts|length }}),
                 }]
             };
 
@@ -86,10 +94,7 @@
                 labels: {{ branch_labels|safe }},
                 datasets: [{
                     data: {{ branch_customer_counts|safe }},
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.7)',
-                        'rgba(54, 162, 235, 0.7)',
-                    ],
+                    backgroundColor: generateRandomColors({{ employee_counts|length }}),
                 }]
             };
             var customerChart = new Chart(document.getElementById('customerChart'), {

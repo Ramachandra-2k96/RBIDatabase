@@ -28,7 +28,7 @@
 
     <!-- Main Content -->
     <div class="container mx-auto mt-8">
-
+        <h2 class="text-lg font-semibold mb-2">Hello {{user.first_name}} {{user.last_name}},</h2>
         <!-- User Info -->
         <div class="bg-white p-8 shadow-md rounded-md mb-8">
             
@@ -61,6 +61,7 @@
             <canvas id="transactionChart" width="400" height="200"></canvas>
         </div>
 
+
 <!-- Transaction History -->
 <div class="bg-white p-8 shadow-md rounded-md">
     <h2 class="text-2xl font-bold mb-6">Transaction History</h2>
@@ -68,11 +69,11 @@
         {% for transaction in user_transaction %}
             <li class="relative flex items-center justify-between px-4 py-3 rounded-lg border 
                        {% if transaction.status == 'Completed' %}
-                           border-green-400 bg-green-100
+                           border-green-400 bg-green-100 transition-transform transform hover:scale-105
                        {% elif transaction.status == 'Processing' %}
-                       bg-yellow-100 border-yellow-400
+                           border-yellow-400 bg-yellow-100 transition-transform transform hover:scale-105
                        {% else %}
-                           border-red-400 bg-red-100
+                           border-red-400 bg-red-100 transition-transform transform hover:scale-105
                        {% endif %}">
                 <div class="flex items-center space-x-4">
                     <div class="flex-shrink-0 w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
@@ -83,10 +84,8 @@
                         <p class="text-gray-800 font-semibold">{{ transaction.transaction_type }}</p>
                         <p class="text-gray-500">{{ transaction.amount }} - {{ transaction.status }}</p>
                         <p class="text-gray-500 text-sm">{{ transaction.timestamp|date:"F d, Y H:i" }}</p>
+                        <p class="text-lg font-bold text-blue-500">{{ transaction.transaction_id }}</p>
                     </div>
-                </div>
-                <div class="text-gray-500 absolute top-2 right-2">
-                    <p class="text-lg font-bold text-blue-500">{{ transaction.transaction_id }}</p>
                 </div>
             </li>
         {% endfor %}
@@ -94,53 +93,57 @@
 </div>
     </div>
     </body>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var creditValues = {{ credit_transactions|safe }};
-        var debitValues = {{ debit_transactions|safe }};
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var creditValues = {{ credit_transactions|safe }};
+            var debitValues = {{ debit_transactions|safe }};
+        
+            // Check if data is available
+            if (creditValues.length > 0 || debitValues.length > 0) {
+                var maxLength = Math.max(creditValues.length, debitValues.length);
+                creditValues.length = maxLength;
+                debitValues.length = maxLength;
     
-        // Check if data is available
-        if (creditValues.length >0 || debitValues.length >0) {
-            var maxLength = Math.max(creditValues.length, debitValues.length);
-            creditValues.length = maxLength;
-            debitValues.length = maxLength;
-    console.log(creditValues);
-    console.log(debitValues);
-            // Use credit_transactions and debit_transactions as needed
+                // Convert debit values to negative
+                var negativeDebitValues = debitValues.map(function(value) {
+                    return value * -1;
+                });
     
-            var ctx = document.getElementById('transactionChart').getContext('2d');
-            var chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: Array.from({ length: maxLength }, (_, i) => i + 1),
-                    datasets: [
-                        {
-                            label: 'Credit',
-                            data: creditValues,
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 2,
-                            fill: false
-                        },
-                        {
-                            label: 'Debit',
-                            data: debitValues,
-                            borderColor: 'rgba(255, 99, 132, 1)',
-                            borderWidth: 2,
-                            fill: false
-                        }
-                    ]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
+                // Use credit_transactions and debit_transactions as needed
+        
+                var ctx = document.getElementById('transactionChart').getContext('2d');
+                var chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: Array.from({ length: maxLength }, (_, i) => i + 1),
+                        datasets: [
+                            {
+                                label: 'Credit',
+                                data: creditValues,
+                                backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                                borderWidth: 2
+                            },
+                            {
+                                label: 'Debit',
+                                data: negativeDebitValues,
+                                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                                borderWidth: 2
+                            }
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
                         }
                     }
-                }
-            });
-        } else {
-            console.error('Credit or debit data not available.');
-        }
-    });
-</script>
+                });
+            } else {
+                console.error('Credit or debit data not available.');
+            }
+        });
+    </script>
+    
+    
 </html>

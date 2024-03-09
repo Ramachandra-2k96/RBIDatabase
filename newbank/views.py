@@ -116,24 +116,19 @@ def branch_details(request, branch_ifsc):
         branch = Branch.objects.get(ifsc_code=branch_ifsc)
         accounts = Account.objects.filter(branch=branch)
         user_profiles  = [account.user for account in accounts]
-        
         # Pie Chart for Customer Salaries
         result = UserProfile.objects.filter(user__accounts__branch__ifsc_code=branch_ifsc) \
             .values('salary') \
             .annotate(count=Count('salary')) \
             .order_by('salary')
-
         # Extract salary values and counts into separate variables
         salary_labels = [float(entry['salary']) for entry in result]
         salary_counts = [entry['count'] for entry in result]
-    
         # Pie Chart for Total Transactions by Customers
-        transaction_data = Transaction.objects.filter(account__branch=branch,status='Success').values('account__user__profile__salary').annotate(total_amount=Sum('amount'))
-       
-        transaction_labels = [f"Salary: {entry['account__user__profile__salary']}" for entry in transaction_data]
-        transaction_amounts = [float(entry['total_amount']) for entry in transaction_data]
-        print(transaction_amounts)
-        
+        transaction_data = Transaction.objects.filter(account__branch__ifsc_code=branch_ifsc, status='Completed').values('account__user__accounts__account_number').annotate(total_amount=Sum('amount'))
+        transaction_labels = [f"Account Number: {entry['account__user__accounts__account_number']}" for entry in transaction_data]
+
+        transaction_amounts = [float(entry['total_amount']) for entry in transaction_data]        
         user_transaction=Transaction.objects.filter(account__branch=branch)
         seven_days_ago = timezone.now() - timedelta(days=7)
         new_user_data = Account.objects.filter(
@@ -144,11 +139,10 @@ def branch_details(request, branch_ifsc):
         
         new_user_labels = [entry['created_at__date'].strftime('%Y-%m-%d') for entry in new_user_data]
         new_user_counts = [entry['count'] for entry in new_user_data]
-        print(new_user_counts)
 
         context = {
-            "user_transaction":user_transaction,
-            "users_with_accounts":user_profiles,
+            "user_transaction":user_transaction[::-1],
+            "users_with_accounts":user_profiles[::-1],
             'branch': branch,
             'salary_labels': salary_labels,
             'salary_counts': salary_counts,
@@ -157,7 +151,6 @@ def branch_details(request, branch_ifsc):
             'new_user_labels': new_user_labels,
             'new_user_counts': new_user_counts,
         }
-
         return render(request, 'branch_details.html', context)
 
     except Branch.DoesNotExist:
@@ -264,7 +257,7 @@ def register_and_create_account(request, ifsc_code):
             user.username = account.account_number
             user.save()
 
-            return redirect('branch', branch_ifsc=ifsc_code)
+            return redirect('branch_details', branch_ifsc=ifsc_code)
 
         except ValidationError as e:
             return render(request, 'registration.html', {'error': str(e)})
@@ -292,7 +285,7 @@ class DashboardView(View):
         account=Account.objects.get(user=user)
         balence=account.balance
         # Load user transactions (replace with your actual logic)
-        transactions = Transaction.objects.filter(account__user=request.user)
+        transactions = Transaction.objects.filter(account__user=request.user).order_by('-timestamp')
         # Separate credit and debit transactions
         credit_transactions = [float(transaction.amount) for transaction in transactions.filter(Q(transaction_type='Credit') | Q(transaction_type='Transfer'), status='Completed')]
         debit_transactions = [float(transaction.amount) for transaction in transactions.filter(transaction_type='Debit', status='Completed')]
@@ -420,7 +413,7 @@ def add_employee(request, ifsc_code):
             employee.ITFSCcode = branch
             employee.save()
             print("Employee data after saving:", employee.__dict__)
-            return redirect('branch', branch_ifsc=ifsc_code)
+            return redirect('branch_details', branch_ifsc=ifsc_code)
         else:
             print(form.errors)
     else:

@@ -73,11 +73,14 @@ class BankEmployeeForm(forms.ModelForm):
                 branch.managers_ssn = employee
                 branch.save()
         else:
-            # For non-Manager roles, proceed with the regular save
             employee = super().save(commit=False)
+            while BankEmployee.objects.filter(employee_number=employee_id).exists():
+                    employee_id = generate_unique_employee_id()
+            employee.employee_number = employee_id
+            # For non-Manager roles, proceed with the regular save
             user = User.objects.create_user(
-                username=str(employee.employee_number),
-                password=str(employee.employee_number),
+                username=str(employee_id),
+                password=str(employee_id),
                 first_name=self.cleaned_data['first_name'],
                 last_name=self.cleaned_data['last_name']
             )

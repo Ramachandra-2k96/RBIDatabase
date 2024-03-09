@@ -129,21 +129,21 @@
         <!-- Pie chart for New User Registrations -->
         <div class="mb-8">
             <h3 class="text-xl font-bold mb-4">Pie chart for New User Registrations</h3>
-            <div class="chart-container" style="position: relative; width:100%; max-width: 600px; height:300px; margin: 0 auto;">
+            <div class="chart-container" style="position: relative; width:100%; max-width: 600px;height:300px; max-height:500px; margin: 0 auto;">
                 <canvas id="newUserChart"></canvas>
             </div>
         </div>
         <!-- Pie chart for Customer Salaries -->
         <div class="mb-8">
             <h3 class="text-xl font-bold mb-4">Pie chart for Customer Salaries</h3>
-            <div class="chart-container" style="position: relative; width:100%; max-width: 600px; height:300px; margin: 0 auto;">
+            <div class="chart-container" style="position: relative; width:100%; max-width: 600px;height:300px; max-height:300px; margin: 0 auto;">
                 <canvas id="salaryChart"></canvas>
             </div>
         </div>
         <!-- Pie chart for Total Transactions by Customers -->
         <div class="mb-8">
             <h3 class="text-xl font-bold mb-4">Pie chart for Total Transactions by Customers</h3>
-            <div class="chart-container" style="position: relative; width:100%; max-width: 600px; height:300px; margin: 0 auto;">
+            <div class="chart-container" style="position: relative; width:100%; max-width: 600px; height:300px;max-height:300px; margin: 0 auto;">
                 <canvas id="transactionChart"></canvas>
             </div>
         </div>
@@ -217,33 +217,55 @@
             },
         });
 
-        // New User Chart
-        var newUserData = {
-            labels: {{ new_user_labels|safe }},
-            datasets: [{
-                data: {{ new_user_counts|safe }},
-                backgroundColor: generateRandomColors({{ new_user_counts|length }}),
-            }]
-        };
+  // Line Chart for New User Registrations
+var lineChartData = {
+    labels: {{ new_user_labels|safe }},
+    datasets: [{
+        label: 'New User Registrations',
+        data: {{ new_user_counts|safe }},
+        borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 3,
+        fill: true,
+    }]
+};
 
-        var newUserChart = new Chart(document.getElementById('newUserChart'), {
-            type: 'pie',
-            data: newUserData,
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top',
-                    },
-                },
+var lineChart = new Chart(document.getElementById('newUserChart'), {
+    type: 'line',
+    data: lineChartData,
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+            },
+        },
+        title: {
+            display: true,
+            text: 'Line Chart for New User Registrations',
+            fontSize: 16,
+            fontColor: '#333',  // Dark gray
+        },
+        scales: {
+            x: {
+                type: 'category',
                 title: {
                     display: true,
-                    text: 'Pie chart for New User Registrations',
+                    text: 'Dates',
                 },
             },
-        });
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'User Counts',
+                },
+            },
+        },
+    },
+});
+
     </script>
 </body>
 
