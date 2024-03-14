@@ -11,11 +11,11 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-
-
+from django.utils.decorators import method_decorator
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Count
 from .models import Bank, BankEmployee, Branch
+
 @csrf_exempt
 def bank_admin(request, bank_id):
     bank_code = bank_id.replace('/', '')
@@ -113,6 +113,7 @@ from django.shortcuts import render
 from django.utils import timezone
 from .models import Branch, Transaction, UserProfile, User
 @login_required
+@csrf_exempt
 def branch_details(request, branch_ifsc):
     try:
         # Retrieve branch instance
@@ -165,6 +166,7 @@ from django.shortcuts import render, redirect
 from .forms import BranchForm
 from .models import Bank, Branch
 @login_required
+@csrf_exempt
 def add_branch(request):
     if request.method == 'POST':
         form = BranchForm(request.POST)
@@ -196,6 +198,7 @@ from django.db import IntegrityError
 from .models import UserProfile, Account, Branch
 from datetime import datetime
 @login_required
+@csrf_exempt
 def register_and_create_account(request, ifsc_code):
     if request.method == 'POST':
         # Extract user information from the form
@@ -257,6 +260,9 @@ def register_and_create_account(request, ifsc_code):
             # Store account number as username in the User table
             user.username = account.account_number
             user.save()
+            user_profile.save()
+            account.save()
+            # Redirect to the branch details page
 
             return redirect('branch_details', branch_ifsc=ifsc_code)
 
@@ -275,10 +281,9 @@ from django.shortcuts import render
 from django.views import View
 from .models import Transaction
 from django.db.models import Q
-@login_required
+@method_decorator(login_required, name='dispatch')
 class DashboardView(View):
     template_name = 'dashboard.html'
-
     def get(self, request, *args, **kwargs):
         # Load user data (replace with your actual logic)
         user = request.user
@@ -308,15 +313,14 @@ from decimal import Decimal
 from .models import Account, Transaction
 
 @login_required
+@csrf_exempt
 def make_transfer(request):
     if request.method == 'POST':
         recipient_username = request.POST.get('recipient_username')
         amount = Decimal(request.POST.get('amount', '0.0'))
-
         try:
             # Get sender's account
             sender_account = Account.objects.get(user=request.user)
-
             # Get recipient's user and account
             try:
                 recipient_user = User.objects.get(username=recipient_username)
@@ -403,9 +407,9 @@ from django.shortcuts import render, redirect
 from .forms import BankEmployeeForm
 from .models import Branch
 @login_required
+@csrf_exempt
 def add_employee(request, ifsc_code):
     branch = Branch.objects.get(ifsc_code=ifsc_code)
-
     if request.method == 'POST':
         form = BankEmployeeForm(request.POST)
         if form.is_valid():
@@ -421,5 +425,25 @@ def add_employee(request, ifsc_code):
         form = BankEmployeeForm()
 
     return render(request, 'add_employee.html', {'form': form})
+
+
+# views.py
+
+from django.shortcuts import render, redirect
+from .models import User  # Import your User model
+from .forms import UserForm  # Import the form you'll create for updating user data
+@login_required
+@csrf_exempt
+def update_user(request, user_id):
+    user = User.objects.get(id=user_id)
+    b=Account.objects.get(user=user)
+    if request.method == 'POST':
+        form = UserForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('branch_details', branch_ifsc=b.branch_id)  # Redirect to user detail page
+    else:
+        form = UserForm(instance=user)
+    return render(request, 'update_user.html', {'form': form})
 
 

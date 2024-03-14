@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import bank_admin,custom_login,landing,add_branch,bank_login,logout_view,branch_details,register_and_create_account
-from .views import DashboardView,make_transfer,add_employee
+from .views import DashboardView,make_transfer,add_employee,update_user
 urlpatterns = [
     path('bank/<str:bank_id>/', bank_admin, name='bank'),
     path('login/', custom_login, name='login'),#
@@ -13,5 +13,5 @@ urlpatterns = [
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
     path('make_transfer/', make_transfer, name='make_transfer'),
     path('add_employee/<str:ifsc_code>/', add_employee, name='add_employee'),
-
+    path('update_user/<str:user_id>/', update_user, name='update_user')
 ]

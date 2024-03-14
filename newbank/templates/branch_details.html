@@ -46,7 +46,7 @@
     <ul id="userList" class="list-none p-0">
         {% for user in users_with_accounts %}
             <li class="border-b border-gray-300 py-6 transition duration-300 transform hover:scale-105">
-                <a href="" class="block group">
+                <a href="{% url 'update_user' user.id %}" class="block group">
                     <div class="flex items-center space-x-4">
                         <div class="group-hover:text-blue-500">
                             <!-- Font Awesome user icon -->
