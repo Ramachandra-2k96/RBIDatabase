@@ -4,7 +4,7 @@ from .views import DashboardView,make_transfer,add_employee,update_user
 urlpatterns = [
     path('bank/<str:bank_id>/', bank_admin, name='bank'),
     path('login/', custom_login, name='login'),#
-    path('landing/', landing, name='landing'),
+    path('', landing, name='landing'),
     path('bank_login/', bank_login, name='bank_login'),#
     path('add_branch/', add_branch, name='add_branch'),
     path('branch/<str:branch_ifsc>/', branch_details, name='branch_details'),
