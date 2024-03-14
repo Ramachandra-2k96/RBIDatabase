@@ -9,11 +9,14 @@ from neo4j import Transaction
 from .models import Bank, BankEmployee, Branch, UserProfile
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+
 
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Count
 from .models import Bank, BankEmployee, Branch
-
+@csrf_exempt
 def bank_admin(request, bank_id):
     bank_code = bank_id.replace('/', '')
     try:
@@ -50,7 +53,7 @@ def bank_admin(request, bank_id):
     return render(request, 'bank_admin.html', context)
 
 
-
+@csrf_exempt
 def custom_login(request):
     if request.method == 'POST':
         # Get the username and password from the form
@@ -71,7 +74,7 @@ def custom_login(request):
     return render(request, 'login.html')
 
 
-
+@csrf_exempt
 def bank_login(request):
     if request.method == 'POST':
         # Get the username and password from the form
@@ -109,7 +112,7 @@ from django.db.models import Count, Sum
 from django.shortcuts import render
 from django.utils import timezone
 from .models import Branch, Transaction, UserProfile, User
-
+@login_required
 def branch_details(request, branch_ifsc):
     try:
         # Retrieve branch instance
@@ -161,7 +164,7 @@ def branch_details(request, branch_ifsc):
 from django.shortcuts import render, redirect
 from .forms import BranchForm
 from .models import Bank, Branch
-
+@login_required
 def add_branch(request):
     if request.method == 'POST':
         form = BranchForm(request.POST)
@@ -192,7 +195,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from .models import UserProfile, Account, Branch
 from datetime import datetime
-
+@login_required
 def register_and_create_account(request, ifsc_code):
     if request.method == 'POST':
         # Extract user information from the form
@@ -272,7 +275,7 @@ from django.shortcuts import render
 from django.views import View
 from .models import Transaction
 from django.db.models import Q
-
+@login_required
 class DashboardView(View):
     template_name = 'dashboard.html'
 
@@ -399,7 +402,7 @@ def make_transfer(request):
 from django.shortcuts import render, redirect
 from .forms import BankEmployeeForm
 from .models import Branch
-
+@login_required
 def add_employee(request, ifsc_code):
     branch = Branch.objects.get(ifsc_code=ifsc_code)
 
