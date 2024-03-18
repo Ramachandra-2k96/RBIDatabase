@@ -1,4 +1,4 @@
-# Django Project Installation Guide
+# RBIDatabase Project Installation Guide
 
 Welcome to our RBIdatabase project! In this guide, we'll walk you through the steps to install and run our project from GitHub. Let's get started!
 
