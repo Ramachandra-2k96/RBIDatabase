@@ -81,6 +81,6 @@ If you would like to contribute to this project, please follow these steps:
 
 ## Support
 
-If you encounter any issues or have questions, feel free to [create an issue](https://github.com/ramachandra-2k96/RBIdatabase/issues) on GitHub.
+If you encounter any issues or have questions, feel free to [create an issue](https://github.com/Ramachandra-2k96/RBIDatabase/issues) on GitHub.
 
 Happy coding! 🚀
