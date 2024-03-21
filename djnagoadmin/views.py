@@ -3,12 +3,13 @@ from django.contrib.auth.views import LoginView
 from django.shortcuts import redirect,render
 from .forms import SuperuserAuthenticationForm
 from django.contrib.auth.forms import UserCreationForm
-from django.views.decorators.csrf import csrf_excempt
-@csrf_excempt
+from django.views.decorators.csrf import csrf_exempt
+
+
 class CustomAdminLoginView(LoginView):
     template_name = 'adminlogin.html'
     authentication_form = SuperuserAuthenticationForm
-
+    @csrf_exempt
     def form_valid(self, form):
         response = super().form_valid(form)
         return redirect('/admin/')
@@ -16,7 +17,7 @@ class CustomAdminLoginView(LoginView):
 def dashboard_redirect(request):
     return redirect('/admin/')
 
-@csrf_excempt
+@csrf_exempt
 def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)

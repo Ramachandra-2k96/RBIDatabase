@@ -229,14 +229,7 @@ def register_and_create_account(request, ifsc_code):
             # Validate salary
             if salary is not None and float(salary) < 30000:
                 raise ValidationError("Salary must be at least 30000.")
-            
-            # Check if email already exists
-            if User.objects.filter(email=email).exists():
-                raise IntegrityError("Email address already exists.")
-            
-            # Check if contact number already exists
-            if UserProfile.objects.filter(contact_number=contact_number).exists():
-                raise IntegrityError("Contact number already exists.")
+        
 
             # Create a new user
             password = date_of_birth_str  # Using date_of_birth as the initial password
