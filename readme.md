@@ -21,7 +21,7 @@ Before you begin, ensure you have the following installed on your system:
 2. Navigate to the project directory:
 
    ```bash
-   cd projectname
+   cd RBIDatabase
    ```
 
 3. Create a virtual environment to isolate project dependencies:
